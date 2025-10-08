@@ -1,12 +1,18 @@
 import { useMemo, useState } from "react";
+import { useBudget } from "../hooks/useBudget";
 
 export default function BudgetForm() {
     const [budget, setBudget] = useState(0);
+    const { dispatch } = useBudget();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        //setBudget(Number(e.target.value)); // otra forma de convertir a número
-        // setBudget(+e.target.value); // otra forma de convertir a número
-        setBudget(e.target.valueAsNumber); // otra forma de convertir a número
+        setBudget(e.target.valueAsNumber);
+    };
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        console.log("Añadir presupuesto:", budget);
+        dispatch({ type: "add-budget", payload: { budget } });
     };
 
     const isValid = useMemo(() => {
@@ -14,7 +20,7 @@ export default function BudgetForm() {
     }, [budget]);
 
     return (
-        <form className="space-y-5">
+        <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
                 <label
                     htmlFor="budget"

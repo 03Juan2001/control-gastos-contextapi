@@ -1,27 +1,37 @@
-import { useReducer, createContext, type Dispatch} from "react";
+import { useReducer, type Dispatch } from "react";
 import {
     budgetReducer,
     initialState,
-    type BudgetState,
     type BudgetActions,
 } from "./../reducers/budget-reducer";
-
-type BudgetContextProps = {
-    state: BudgetState | undefined;
-    dispatch: Dispatch<BudgetActions>;
-};
+import { BudgetContext } from "./BudgetContextDef";
 
 type BudgetProviderProps = {
     children: React.ReactNode;
 };
 
-export const BudgetContext = createContext<BudgetContextProps>(null!);
+type BudgetProviderState = {
+    state: typeof initialState;
+    dispatch: Dispatch<BudgetActions>;
+};
 
-export const BudgetProvider = ({ children } : BudgetProviderProps) => {
+/*
+ * Componente proveedor del contexto de presupuesto.
+ * Utiliza un reducer para manejar el estado del presupuesto y proporciona
+ * el estado y la función dispatch a través del contexto.
+ */
+export const BudgetProvider = ({ children }: BudgetProviderProps) => {
+    // useReducer para manejar el estado del presupuesto
     const [state, dispatch] = useReducer(budgetReducer, initialState);
 
     return (
-        <BudgetContext.Provider value={{ state, dispatch }}>
+        // Brindar el estado y el dispatch a los componentes hijos
+        // as React.ContextType<typeof BudgetContext> para evitar error de tipo con TypeScript
+        <BudgetContext.Provider
+            value={
+                { state, dispatch } as BudgetProviderState
+            }
+        >
             {children}
         </BudgetContext.Provider>
     );
