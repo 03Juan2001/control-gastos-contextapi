@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { DraftExpense, Value } from "../types";
 import { categories } from "../data/categories";
 import DatePicker from "react-date-picker";
 import "react-date-picker/dist/DatePicker.css";
 import "react-calendar/dist/Calendar.css";
+import ErrorMessage from "./ErrorMessage";
+import { useBudget } from "../hooks/useBudget";
 
 export default function ExpenseForm() {
     const [expense, setExpense] = useState<DraftExpense>({
@@ -14,6 +16,16 @@ export default function ExpenseForm() {
     });
 
     const [error, setError] = useState<string>("");
+    const { dispatch, state } = useBudget();
+
+    useEffect(() => {
+        if (state.editingId) {
+            const editingExpense = state.expenses.filter(
+                (currentExpense) => currentExpense.id === state.editingId
+            )[0];
+            setExpense(editingExpense);
+        }
+    }, [state.editingId, state.expenses]);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -35,17 +47,27 @@ export default function ExpenseForm() {
 
     const handleSubmint = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log(expense);
 
         // Validar el formulario
-        if (
-            Object.values(expense).includes("") ||
-            expense.amount <= 0 ||
-            expense.date === null
-        ) {
+        if (Object.values(expense).includes("")) {
             setError("Todos los campos son obligatorios");
             return;
         }
+
+        if (state.editingId) {
+            dispatch({
+                type: "update-expense",
+                payload: { expense: { id: state.editingId, ...expense } },
+            });
+        } else {
+            dispatch({ type: "add-expense", payload: { expense } });
+        }
+        setExpense({
+            amount: 0,
+            expenseName: "",
+            category: "",
+            date: new Date(),
+        });
     };
 
     return (
@@ -54,9 +76,10 @@ export default function ExpenseForm() {
                 className="uppercase text-center text-2xl font-black border-b-4
                 border-blue-600 pb-2"
             >
-                Nuevo Gasto
+                {state.editingId ? "Editar Gasto" : "Nuevo Gasto"}
             </legend>
 
+            {error && <ErrorMessage>{error}</ErrorMessage>}
             <div className="flex flex-col gap-2">
                 <label htmlFor="expenseName" className="text-xl">
                     Nombre Gasto:{" "}
@@ -124,7 +147,7 @@ export default function ExpenseForm() {
             <input
                 type="submit"
                 className="bg-blue-600 cursor-pointer w-full text-white p-2 rounded uppercase font-bold hover:bg-blue-700 transition-colors"
-                value="Añadir Gasto"
+                value={state.editingId ? "Guardar Cambios" : "Añadir Gasto"}
             />
         </form>
     );
