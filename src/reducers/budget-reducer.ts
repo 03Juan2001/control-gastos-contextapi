@@ -19,14 +19,6 @@ export type BudgetState = {
     editingId: Expense["id"];
 };
 
-// Estado inicial del presupuesto
-export const initialState: BudgetState = {
-    budget: initialBudget(),
-    modal: false,
-    expenses: localStorageExpenses(),
-    editingId: "",
-};
-
 const initialBudget = (): number => {
     const localStorageBudget = localStorage.getItem("budget");
     return localStorageBudget ? +localStorageBudget : 0;
@@ -35,6 +27,14 @@ const initialBudget = (): number => {
 const localStorageExpenses = (): Expense[] => {
     const localStorageExpenses = localStorage.getItem("expenses");
     return localStorageExpenses ? JSON.parse(localStorageExpenses) : [];
+};
+
+// Estado inicial del presupuesto
+export const initialState: BudgetState = {
+    budget: initialBudget(),
+    modal: false,
+    expenses: localStorageExpenses(),
+    editingId: "",
 };
 
 // Función para crear un nuevo gasto con un ID único
